@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">FixMyStreet.net</string>
+    <string name="report_a_problem">Report a problem</string>
+    <string name="problem_type">Problem Type:</string>
+    <string name="longitude">Longitude:</string>
+    <string name="latitude">Latitude:</string>
+    <string name="report">Report Problem</string>
+    <string name="problem_summary">Problem Summary:</string>
+    <string name="explain_what_s_wrong">Explain what’s wrong below:</string>
+    <string name="summary_description">e.g. 10 inch pothole on\nExample St</string>
+    <string name="extra_example">e.g. This pothole has been\nhere for two months and…</string>
+    <string name="next_screen">Next Screen</string>
+    <string name="address">Address:</string>
+    <string name="council">Council:</string>
+    <string name="loading">Loading…</string>
+    <string name="your_name">Your Name:</string>
+    <string name="your_mobile">Your Mobile:</string>
+    <string name="your_email">Your Email:</string>
+    <string name="your_password">Your Password:</string>
+    <string name="repeat_password">Repeat Password:</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="login">Login</string>
+    <string name="take_wide_shot">Take Wide Shot</string>
+    <string name="for_best_results">For best results include a close-up and a wide shot. Please avoid personal information and vehicle number plates where possible.</string>
+    <string name="take_close_shot">Take Close Shot</string>
+    <string name="wide_angle_shot">Wide angle shot</string>
+    <string name="close_up_shot">Close up shot</string>
+    <string name="chooseaction">Choose Action</string>
+
+    <string-array name="common_problems">
+        <item>Abandoned Vehicle</item>
+        <item>Blocked Drain</item>
+        <item>Bus Stop</item>
+        <item>Car Parking</item>
+        <item>Dog Dropping</item>
+        <item>Graffiti</item>
+        <item>Illegal Advertising</item>
+        <item>Illegal Dumping</item>
+        <item>Park/Landscape</item>
+        <item>Pavement/Footpath</item>
+        <item>Pothole</item>
+        <item>Public Right of Way</item>
+        <item>Public Toilet</item>
+        <item>Road/Highway</item>
+        <item>Street Cleaning</item>
+        <item>Street Lighting</item>
+        <item>Street Signs</item>
+        <item>Traffic Lights</item>
+        <item>Trees</item>
+        <item>Other</item>
+    </string-array>
+</resources>
