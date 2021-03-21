@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -61,14 +62,14 @@ public class Photos extends Activity
 
 	public void closeShotView(View v)
 	{
-		try
-		{
-			Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-			if(galleryIntent.resolveActivity(getPackageManager()) != null)
-				startActivityForResult(galleryIntent, REQUEST_IMAGE_CAPTURE2);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		Intent chooser = new Intent(Intent.ACTION_CHOOSER);
+		chooser.putExtra(Intent.EXTRA_INTENT, galleryIntent);
+		chooser.putExtra(Intent.EXTRA_TITLE, getString(R.string.chooseaction));
+		Intent[] intentArray = {cameraIntent};
+		chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
+		startActivityForResult(chooser, REQUEST_IMAGE_CAPTURE2);
 	}
 
 	@Override
@@ -123,20 +124,38 @@ public class Photos extends Activity
 					e.printStackTrace();
 				}
 			} else {
-				// this case will occur when taking a picture with a camera
-				Bitmap bitmap = null;
-				Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-						new String[]{MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED}, MediaStore.Images.Media.DATE_ADDED,null,"date_added DESC");
-				if (cursor != null && cursor.moveToFirst())
+				if(Build.VERSION.SDK_INT >= 29)
 				{
-					Uri uri = Uri.parse(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
-					String photoPath = uri.toString();
-					cursor.close();
-					if (photoPath != null)
+					Bitmap bitmap = null;
+					Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+							new String[]{MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED, MediaStore.Images.ImageColumns.ORIENTATION}, MediaStore.Images.Media.DATE_ADDED, null, "date_added DESC");
+					if (cursor != null && cursor.moveToFirst())
 					{
-						bitmap = BitmapFactory.decodeFile(photoPath);
-						ImageView im = findViewById(R.id.imageView2);
-						im.setImageBitmap(bitmap);
+						Uri uri = Uri.parse(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
+						String photoPath = uri.toString();
+						cursor.close();
+						if (photoPath != null)
+						{
+							bitmap = BitmapFactory.decodeFile(photoPath);
+							ImageView im = findViewById(R.id.imageView2);
+							im.setImageBitmap(bitmap);
+						}
+					}
+				} else {
+					Bitmap bitmap = null;
+					Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+							new String[]{MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_ADDED}, MediaStore.Images.Media.DATE_ADDED, null, "date_added DESC");
+					if (cursor != null && cursor.moveToFirst())
+					{
+						Uri uri = Uri.parse(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
+						String photoPath = uri.toString();
+						cursor.close();
+						if (photoPath != null)
+						{
+							bitmap = BitmapFactory.decodeFile(photoPath);
+							ImageView im = findViewById(R.id.imageView2);
+							im.setImageBitmap(bitmap);
+						}
 					}
 				}
 			}

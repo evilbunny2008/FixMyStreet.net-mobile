@@ -26,7 +26,7 @@
     <string name="take_close_shot">Take Close Shot</string>
     <string name="wide_angle_shot">Wide angle shot</string>
     <string name="close_up_shot">Close up shot</string>
-    <string name="chooseaction">Choose Action</string>
+    <string name="chooseaction">Choose a camera or photo option</string>
 
     <string-array name="common_problems">
         <item>Abandoned Vehicle</item>
