@@ -78,7 +78,7 @@ public class Photos extends Activity
 
 		if(photoFile != null)
 		{
-			Uri photoURI = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.provider", photoFile);
+			Uri photoURI = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.fileprovider", photoFile);
 			takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
 			startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE2);
 		}

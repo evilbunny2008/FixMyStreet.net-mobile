@@ -27,7 +27,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DecimalFormat;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback//, GoogleMap.OnMarkerClickListener
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 {
 	private final int permsRequestCode = 200;
 	private GoogleMap mMap;
@@ -50,19 +50,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		assert mapFragment != null;
 		mapFragment.getMapAsync(this);
 
-		if (Build.VERSION.SDK_INT < 23)
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
 		{
-			doMore2();
-		} else {
-			if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+			ActivityCompat.requestPermissions(this, new String[]
 			{
-				ActivityCompat.requestPermissions(this, new String[]
-						{
-								Manifest.permission.ACCESS_FINE_LOCATION,
-						}, permsRequestCode);
-			} else {
-				doMore2();
-			}
+					Manifest.permission.ACCESS_FINE_LOCATION,
+			}, permsRequestCode);
+		} else {
+			doMore2();
 		}
 	}
 
@@ -70,17 +65,25 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	public void onResume()
 	{
 		super.onResume();
+		updateButtons();
+	}
 
+	private void updateButtons()
+	{
 		LinearLayout ll = findViewById(R.id.signupin);
 		LinearLayout ll2 = findViewById(R.id.report);
 
-		if (common.GetStringPref("lastauth", "0").equals("1"))
+		if(!lat.getText().toString().equals(getString(R.string.loading)) &&
+				!lng.getText().toString().equals(getString(R.string.loading)))
 		{
-			ll.setVisibility(View.GONE);
-			ll2.setVisibility(View.VISIBLE);
-		} else {
-			ll2.setVisibility(View.GONE);
-			ll.setVisibility(View.VISIBLE);
+			if (common.GetStringPref("lastauth", "0").equals("1"))
+			{
+				ll.setVisibility(View.GONE);
+				ll2.setVisibility(View.VISIBLE);
+			} else {
+				ll2.setVisibility(View.GONE);
+				ll.setVisibility(View.VISIBLE);
+			}
 		}
 	}
 
@@ -90,13 +93,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
 		boolean hasPermission = false;
-		if (requestCode == permsRequestCode)
-		{
-			if (grantResults.length >= 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-			{
-				hasPermission = true;
-			}
-		}
+		if (requestCode == permsRequestCode && grantResults.length >= 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+			hasPermission = true;
 
 		if (hasPermission)
 		{
@@ -115,7 +113,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 		Location myLocation = null;
 
-		if (locationManager != null && (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < 23))
+		if (locationManager != null && (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
 		{
 			myLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 			if (myLocation == null)
@@ -136,6 +134,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 			lat.setText(llat);
 			lng.setText(llng);
+
+			updateButtons();
 		}
 	}
 
