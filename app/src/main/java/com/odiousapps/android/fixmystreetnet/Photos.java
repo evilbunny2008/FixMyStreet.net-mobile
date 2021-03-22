@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -61,9 +62,23 @@ public class Photos extends Activity
 
 	public void wideShotView(View v)
 	{
-		Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-		if(galleryIntent.resolveActivity(getPackageManager()) != null)
-			startActivityForResult(galleryIntent, REQUEST_IMAGE_CAPTURE1);
+		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		if (takePictureIntent.resolveActivity(getPackageManager()) == null)
+			return;
+
+		File photoFile = null;
+		try {
+			photoFile = createImageFile();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+
+		if(photoFile == null)
+			return;
+
+		Uri photoURI = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.provider", photoFile);
+		takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+		startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE1);
 	}
 
 	public void closeShotView(View v)
@@ -85,25 +100,6 @@ public class Photos extends Activity
 		Uri photoURI = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.provider", photoFile);
 		takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
 		startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE2);
-
-//		File file=new File(getFilesDir(),"test.txt");
-//		Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
-//		shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"Test");
-//		shareIntent.setType("text/plain");
-//		shareIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[] {"evilbunny@evilbunny.org"});
-//		Uri uri = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.provider", file);
-//
-//		ArrayList<Uri> uris = new ArrayList<Uri>();
-//		uris.add(uri);
-//
-//		shareIntent .putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-//
-//		try
-//		{
-//			startActivity(Intent.createChooser(shareIntent , "Email:").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-//		} catch(ActivityNotFoundException e) {
-//			Toast.makeText(this,"Sorry No email Application was found", Toast.LENGTH_LONG).show();
-//		}
 	}
 
 	@Override
@@ -136,7 +132,8 @@ public class Photos extends Activity
 		{
 			try
 			{
-				Common.LogMessage(data.getData().getPath());
+				ImageView im = findViewById(R.id.imageView2);
+				im.setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

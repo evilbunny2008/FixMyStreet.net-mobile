@@ -22,7 +22,7 @@
     <string name="sign_up">Sign Up</string>
     <string name="login">Login</string>
     <string name="take_wide_shot">Take Wide Shot</string>
-    <string name="for_best_results">For best results include a close-up and a wide shot. Please avoid personal information and vehicle number plates where possible.</string>
+    <string name="for_best_results">For best results include a close-up and a wide shot in landscape. Please avoid personal information and vehicle number plates where possible.</string>
     <string name="take_close_shot">Take Close Shot</string>
     <string name="wide_angle_shot">Wide angle shot</string>
     <string name="close_up_shot">Close up shot</string>
