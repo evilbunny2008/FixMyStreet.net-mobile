@@ -1,6 +1,7 @@
 package com.odiousapps.android.fixmystreetnet;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -9,11 +10,13 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -76,12 +79,31 @@ public class Photos extends Activity
 			ex.printStackTrace();
 		}
 
-		if(photoFile != null)
-		{
-			Uri photoURI = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.fileprovider", photoFile);
-			takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-			startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE2);
-		}
+		if(photoFile == null)
+			return;
+
+		Uri photoURI = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.provider", photoFile);
+		takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+		startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE2);
+
+//		File file=new File(getFilesDir(),"test.txt");
+//		Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND_MULTIPLE);
+//		shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"Test");
+//		shareIntent.setType("text/plain");
+//		shareIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[] {"evilbunny@evilbunny.org"});
+//		Uri uri = FileProvider.getUriForFile(this,"com.odiousapps.android.fixmystreetnet.provider", file);
+//
+//		ArrayList<Uri> uris = new ArrayList<Uri>();
+//		uris.add(uri);
+//
+//		shareIntent .putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+//
+//		try
+//		{
+//			startActivity(Intent.createChooser(shareIntent , "Email:").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+//		} catch(ActivityNotFoundException e) {
+//			Toast.makeText(this,"Sorry No email Application was found", Toast.LENGTH_LONG).show();
+//		}
 	}
 
 	@Override

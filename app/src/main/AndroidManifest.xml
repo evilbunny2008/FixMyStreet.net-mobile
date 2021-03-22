@@ -46,7 +46,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.odiousapps.android.fixmystreetnet.fileprovider"
+            android:authorities="com.odiousapps.android.fixmystreetnet.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
