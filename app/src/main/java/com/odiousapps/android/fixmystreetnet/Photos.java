@@ -1,9 +1,7 @@
 package com.odiousapps.android.fixmystreetnet;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,13 +9,10 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -31,8 +26,6 @@ public class Photos extends Activity
 	private static final int REQUEST_IMAGE_CAPTURE1 = 1;
 	private static final int REQUEST_IMAGE_CAPTURE2 = 2;
 
-	private String currentPhotoPath;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -44,19 +37,19 @@ public class Photos extends Activity
 		r = r.fromString(json);
 	}
 
-	private File createImageFile() throws IOException
+	private File createImageFile(boolean isWide) throws IOException
 	{
 		// Create an image file name
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
 		String imageFileName = "JPEG_" + timeStamp + "_";
 		File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-		File image = File.createTempFile(imageFileName,  /* prefix */
-				".jpg",         /* suffix */
-				storageDir      /* directory */
-		);
+		File image = File.createTempFile(imageFileName,".jpg", storageDir);
 
 		// Save a file: path for use with ACTION_VIEW intents
-		currentPhotoPath = image.getAbsolutePath();
+		if(isWide)
+			r.wide = image.getAbsolutePath();
+		else
+			r.close = image.getAbsolutePath();
 		return image;
 	}
 
@@ -68,7 +61,7 @@ public class Photos extends Activity
 
 		File photoFile = null;
 		try {
-			photoFile = createImageFile();
+			photoFile = createImageFile(true);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -89,7 +82,7 @@ public class Photos extends Activity
 
 		File photoFile = null;
 		try {
-			photoFile = createImageFile();
+			photoFile = createImageFile(false);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -111,19 +104,9 @@ public class Photos extends Activity
 		{
 			try
 			{
-				Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-
-				File f = new File(getExternalFilesDir(""), "wide.jpg");
-				FileOutputStream fos = new FileOutputStream(f);
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-				fos.flush();
-				fos.close();
-
-				r.wide = f.getAbsolutePath();
-
 				ImageView im = findViewById(R.id.imageView);
-				im.setImageBitmap(bitmap);
-			} catch (IOException e) {
+				im.setImageBitmap(BitmapFactory.decodeFile(r.wide));
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -133,7 +116,7 @@ public class Photos extends Activity
 			try
 			{
 				ImageView im = findViewById(R.id.imageView2);
-				im.setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath));
+				im.setImageBitmap(BitmapFactory.decodeFile(r.close));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
