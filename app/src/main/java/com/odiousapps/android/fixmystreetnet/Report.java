@@ -1,14 +1,12 @@
 package com.odiousapps.android.fixmystreetnet;
 
-import android.graphics.Bitmap;
-
 import com.google.gson.Gson;
 
 import androidx.annotation.NonNull;
 
 class Report
 {
-	String lat, lng, problem, summary, extra, address, council, email;
+	String lat, lng, problem, summary, extra, address, council;
 	String wide, close;
 
 	@NonNull

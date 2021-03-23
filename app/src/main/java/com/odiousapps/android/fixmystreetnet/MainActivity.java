@@ -10,13 +10,23 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,6 +34,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.Task;
 
 import java.text.DecimalFormat;
 
@@ -34,6 +45,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private TextView lat, lng;
 	private final DecimalFormat df = new DecimalFormat("#.######");
 	private Common common;
+	private LocationRequest mLocationRequest;
+	private FusedLocationProviderClient mFusedLocationClient;
+	private Location mCurrentLocation;
+	private LocationCallback mLocationCallback;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -50,11 +65,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		assert mapFragment != null;
 		mapFragment.getMapAsync(this);
 
-		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+			ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
 		{
 			ActivityCompat.requestPermissions(this, new String[]
 			{
 					Manifest.permission.ACCESS_FINE_LOCATION,
+					Manifest.permission.ACCESS_COARSE_LOCATION
 			}, permsRequestCode);
 		} else {
 			doMore2();
@@ -73,17 +90,20 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		LinearLayout ll = findViewById(R.id.signupin);
 		LinearLayout ll2 = findViewById(R.id.report);
 
-		if(!lat.getText().toString().equals(getString(R.string.loading)) &&
-				!lng.getText().toString().equals(getString(R.string.loading)))
+		Common.LogMessage("lat == " + lat.getText().toString());
+		Common.LogMessage("lng == " + lng.getText().toString());
+
+		if(lat.getText().toString().equals(getString(R.string.loading)) ||
+				lng.getText().toString().equals(getString(R.string.loading)))
+			return;
+
+		if (common.GetStringPref("lastauth", "0").equals("1"))
 		{
-			if (common.GetStringPref("lastauth", "0").equals("1"))
-			{
-				ll.setVisibility(View.GONE);
-				ll2.setVisibility(View.VISIBLE);
-			} else {
-				ll2.setVisibility(View.GONE);
-				ll.setVisibility(View.VISIBLE);
-			}
+			ll.setVisibility(View.GONE);
+			ll2.setVisibility(View.VISIBLE);
+		} else {
+			ll2.setVisibility(View.GONE);
+			ll.setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -93,7 +113,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
 		boolean hasPermission = false;
-		if (requestCode == permsRequestCode && grantResults.length >= 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+		if (requestCode == permsRequestCode && grantResults.length >= 2
+				&& grantResults[0] == PackageManager.PERMISSION_GRANTED
+				&& grantResults[1] == PackageManager.PERMISSION_GRANTED)
 			hasPermission = true;
 
 		if (hasPermission)
@@ -110,34 +132,113 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 	void doMore()
 	{
-		LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-		Location myLocation = null;
-
-		if (locationManager != null && (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
-			myLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			if (myLocation == null)
-				myLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-		}
+			mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+			SettingsClient mSettingsClient = LocationServices.getSettingsClient(this);
 
-		if(myLocation != null)
-		{
-			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 16.0f));
+			mLocationCallback = new LocationCallback()
+			{
+				@Override
+				public void onLocationResult(LocationResult result)
+				{
+					super.onLocationResult(result);
+					//mCurrentLocation = locationResult.getLastLocation();
+					mCurrentLocation = result.getLocations().get(0);
 
-			LatLng myLL = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-			Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
-			m.showInfoWindow();
-			mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
+					if(mCurrentLocation!=null)
+					{
+						Common.LogMessage(mCurrentLocation.getLatitude() + ". " + mCurrentLocation.getLongitude());
+					}
 
-			String llat = df.format(myLocation.getLatitude());
-			String llng = df.format(myLocation.getLongitude());
+					mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+				}
 
-			lat.setText(llat);
-			lng.setText(llng);
+				//Locatio nMeaning that all relevant information is available
+				@Override
+				public void onLocationAvailability(LocationAvailability availability)
+				{
+					//boolean isLocation = availability.isLocationAvailable();
+				}
+			};
 
-			updateButtons();
+			mLocationRequest = new LocationRequest();
+			mLocationRequest.setInterval(1000);
+			mLocationRequest.setFastestInterval(1000);
+
+			mLocationRequest.setNumUpdates(3);
+			mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+			LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+			builder.addLocationRequest(mLocationRequest);
+
+			LocationSettingsRequest mLocationSettingsRequest = builder.build();
+
+			Task<LocationSettingsResponse> locationResponse = mSettingsClient.checkLocationSettings(mLocationSettingsRequest);
+			locationResponse.addOnSuccessListener(this, locationSettingsResponse ->
+			{
+				if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+					return;
+
+				mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+			});
+
+			locationResponse.addOnFailureListener(this, e ->
+			{
+				int statusCode = ((ApiException) e).getStatusCode();
+				switch (statusCode)
+				{
+					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+						Common.LogMessage("onFailure: Location environment check");
+						break;
+					case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+						String errorMessage = "Check location setting";
+						Common.LogMessage("onFailure: " + errorMessage);
+				}
+			});
 		}
 	}
+
+	@Override
+	public void onStop()
+	{
+		super.onStop();
+		stopFusedClient();
+	}
+
+	private void stopFusedClient()
+	{
+		if(mFusedLocationClient != null)
+		{
+			mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+			mFusedLocationClient = null;
+		}
+	}
+
+//	@Override
+//	public void onLocationChanged(@NonNull Location myLocation)
+//	{
+//		if (myLocation != null)
+//		{
+//			Common.LogMessage("Location Changed " + myLocation.getLatitude() + " and " + myLocation.getLongitude());
+//			mLocationManager.removeUpdates(this);
+//
+//			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 16.0f));
+//
+//			LatLng myLL = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+//			Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
+//			m.showInfoWindow();
+//			mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
+//
+//			String llat = df.format(myLocation.getLatitude());
+//			String llng = df.format(myLocation.getLongitude());
+//
+//			lat.setText(llat);
+//			lng.setText(llng);
+//
+//			updateButtons();
+//		}
+//	}
 
 	void doMore2()
 	{}
@@ -169,7 +270,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		Report r = new Report();
 		r.lat = lat.getText().toString();
 		r.lng = lng.getText().toString();
-		r.email = common.GetStringPref("email", "");
 
 		Intent i = new Intent(getBaseContext(), ReportDetails.class);
 		i.putExtra("report", r.toString());
@@ -180,6 +280,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	public void onMapReady(GoogleMap googleMap)
 	{
 		mMap = googleMap;
+
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-34, 151), 12.0f));
+
+		LatLng myLL = new LatLng(-33.938287, 151.171844);
+		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
+		m.showInfoWindow();
+		mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
+
 		mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener()
 		{
 			@Override
@@ -198,6 +306,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 				lat.setText(llat);
 				lng.setText(llng);
+
+				updateButtons();
+				stopFusedClient();
 			}
 
 			@Override

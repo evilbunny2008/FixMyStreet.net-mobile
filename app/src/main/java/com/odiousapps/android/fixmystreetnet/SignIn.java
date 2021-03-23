@@ -133,7 +133,6 @@ public class SignIn extends Activity
 				if(j.getString("status").equals("OK"))
 				{
 					common.SetStringPref("lastauth", "1");
-					r.email = email.getText().toString();
 					Intent i = new Intent(getBaseContext(), ReportDetails.class);
 					i.putExtra("report", r.toString());
 					startActivity(i);
