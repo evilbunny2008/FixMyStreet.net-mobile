@@ -26,7 +26,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -44,8 +43,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private Common common;
 
 	LocationRequest mLocationRequest;
-	Location mLastLocation;
-	Marker mCurrLocationMarker;
 	FusedLocationProviderClient mFusedLocationClient;
 
 	@Override
@@ -143,33 +140,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private void pauseFusedClient()
 	{
 		if (mFusedLocationClient != null)
+		{
 			mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+			mFusedLocationClient = null;
+		}
 	}
-
-//	@Override
-//	public void onLocationChanged(@NonNull Location myLocation)
-//	{
-//		if (myLocation != null)
-//		{
-//			Common.LogMessage("Location Changed " + myLocation.getLatitude() + " and " + myLocation.getLongitude());
-//			mLocationManager.removeUpdates(this);
-//
-//			mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 16.0f));
-//
-//			LatLng myLL = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-//			Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
-//			m.showInfoWindow();
-//			mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
-//
-//			String llat = df.format(myLocation.getLatitude());
-//			String llng = df.format(myLocation.getLongitude());
-//
-//			lat.setText(llat);
-//			lng.setText(llng);
-//
-//			updateButtons();
-//		}
-//	}
 
 	void doMore2()
 	{}
@@ -251,19 +226,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-34, 151), 12.0f));
 
-		LatLng myLL = new LatLng(-33.938287, 151.171844);
+		LatLng myLL = new LatLng(-33.859046, 151.2050339);
 		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
 		m.showInfoWindow();
 		mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
 
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
-			mLocationRequest = new LocationRequest();
+			mLocationRequest = LocationRequest.create();
 			mLocationRequest.setInterval(120000); // two minute interval
 			mLocationRequest.setFastestInterval(120000);
 			mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 			mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
-			mMap.setMyLocationEnabled(true);
 		}
 
 		mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener()
