@@ -12,43 +12,41 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.Task;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 {
 	private final int permsRequestCode = 200;
 	private GoogleMap mMap;
 	private TextView lat, lng;
+	private LinearLayout signupin, report;
 	private final DecimalFormat df = new DecimalFormat("#.######");
 	private Common common;
-	private LocationRequest mLocationRequest;
-	private FusedLocationProviderClient mFusedLocationClient;
-	private Location mCurrentLocation;
-	private LocationCallback mLocationCallback;
+
+	LocationRequest mLocationRequest;
+	Location mLastLocation;
+	Marker mCurrLocationMarker;
+	FusedLocationProviderClient mFusedLocationClient;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -58,12 +56,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 		common = new Common(this);
 
+		signupin = findViewById(R.id.signupin);
+		report = findViewById(R.id.report);
+
 		lat = findViewById(R.id.lat);
 		lng = findViewById(R.id.lng);
 
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 		assert mapFragment != null;
 		mapFragment.getMapAsync(this);
+
+		mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
 			ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
@@ -87,9 +90,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 	private void updateButtons()
 	{
-		LinearLayout ll = findViewById(R.id.signupin);
-		LinearLayout ll2 = findViewById(R.id.report);
-
 		Common.LogMessage("lat == " + lat.getText().toString());
 		Common.LogMessage("lng == " + lng.getText().toString());
 
@@ -99,11 +99,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 		if (common.GetStringPref("lastauth", "0").equals("1"))
 		{
-			ll.setVisibility(View.GONE);
-			ll2.setVisibility(View.VISIBLE);
+			signupin.setVisibility(View.GONE);
+			report.setVisibility(View.VISIBLE);
 		} else {
-			ll2.setVisibility(View.GONE);
-			ll.setVisibility(View.VISIBLE);
+			report.setVisibility(View.GONE);
+			signupin.setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -131,88 +131,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 
 	void doMore()
-	{
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-		{
-			mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-			SettingsClient mSettingsClient = LocationServices.getSettingsClient(this);
-
-			mLocationCallback = new LocationCallback()
-			{
-				@Override
-				public void onLocationResult(LocationResult result)
-				{
-					super.onLocationResult(result);
-					//mCurrentLocation = locationResult.getLastLocation();
-					mCurrentLocation = result.getLocations().get(0);
-
-					if(mCurrentLocation!=null)
-					{
-						Common.LogMessage("Current location: " + mCurrentLocation.getLatitude() + ". " + mCurrentLocation.getLongitude());
-					}
-
-					mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-				}
-
-				//Locatio nMeaning that all relevant information is available
-				@Override
-				public void onLocationAvailability(LocationAvailability availability)
-				{
-					//boolean isLocation = availability.isLocationAvailable();
-				}
-			};
-
-			mLocationRequest = new LocationRequest();
-			mLocationRequest.setInterval(5000);
-			mLocationRequest.setFastestInterval(5000);
-
-			mLocationRequest.setNumUpdates(3);
-			mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-			LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-			builder.addLocationRequest(mLocationRequest);
-
-			LocationSettingsRequest mLocationSettingsRequest = builder.build();
-
-			Task<LocationSettingsResponse> locationResponse = mSettingsClient.checkLocationSettings(mLocationSettingsRequest);
-			locationResponse.addOnSuccessListener(this, locationSettingsResponse ->
-			{
-				if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-					return;
-
-				mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
-			});
-
-			locationResponse.addOnFailureListener(this, e ->
-			{
-				int statusCode = ((ApiException) e).getStatusCode();
-				switch (statusCode)
-				{
-					case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-						Common.LogMessage("onFailure: Location environment check");
-						break;
-					case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-						String errorMessage = "Check location setting";
-						Common.LogMessage("onFailure: " + errorMessage);
-				}
-			});
-		}
-	}
+	{}
 
 	@Override
-	public void onStop()
+	public void onPause()
 	{
-		super.onStop();
-		stopFusedClient();
+		super.onPause();
+		pauseFusedClient();
 	}
 
-	private void stopFusedClient()
+	private void pauseFusedClient()
 	{
-		if(mFusedLocationClient != null)
-		{
+		if (mFusedLocationClient != null)
 			mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-			mFusedLocationClient = null;
-		}
 	}
 
 //	@Override
@@ -276,6 +207,43 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		startActivity(i);
 	}
 
+	private void refreshLocation(Location myLocation)
+	{
+		Common.LogMessage("Location Changed " + myLocation.getLatitude() + " and " + myLocation.getLongitude());
+		pauseFusedClient();
+
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 16.0f));
+
+		LatLng myLL = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
+		m.showInfoWindow();
+		mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
+
+		String llat = df.format(myLocation.getLatitude());
+		String llng = df.format(myLocation.getLongitude());
+
+		lat.setText(llat);
+		lng.setText(llng);
+
+		updateButtons();
+	}
+
+	LocationCallback mLocationCallback = new LocationCallback()
+	{
+		@Override
+		public void onLocationResult(LocationResult locationResult)
+		{
+			List<Location> locationList = locationResult.getLocations();
+			if(locationList.size() > 0)
+			{
+				Location location = locationList.get(locationList.size() - 1);
+				Log.i("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
+
+				refreshLocation(location);
+			}
+		}
+	};
+
 	@Override
 	public void onMapReady(GoogleMap googleMap)
 	{
@@ -287,6 +255,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
 		m.showInfoWindow();
 		mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
+
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+		{
+			mLocationRequest = new LocationRequest();
+			mLocationRequest.setInterval(120000); // two minute interval
+			mLocationRequest.setFastestInterval(120000);
+			mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+			mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+			mMap.setMyLocationEnabled(true);
+		}
 
 		mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener()
 		{
@@ -308,7 +286,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				lng.setText(llng);
 
 				updateButtons();
-				stopFusedClient();
+				pauseFusedClient();
 			}
 
 			@Override
