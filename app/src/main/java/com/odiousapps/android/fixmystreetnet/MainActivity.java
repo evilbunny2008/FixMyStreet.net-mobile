@@ -148,7 +148,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 					if(mCurrentLocation!=null)
 					{
-						Common.LogMessage(mCurrentLocation.getLatitude() + ". " + mCurrentLocation.getLongitude());
+						Common.LogMessage("Current location: " + mCurrentLocation.getLatitude() + ". " + mCurrentLocation.getLongitude());
 					}
 
 					mFusedLocationClient.removeLocationUpdates(mLocationCallback);
@@ -163,8 +163,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			};
 
 			mLocationRequest = new LocationRequest();
-			mLocationRequest.setInterval(1000);
-			mLocationRequest.setFastestInterval(1000);
+			mLocationRequest.setInterval(5000);
+			mLocationRequest.setFastestInterval(5000);
 
 			mLocationRequest.setNumUpdates(3);
 			mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);

@@ -2,7 +2,9 @@ package com.odiousapps.android.fixmystreetnet;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,6 +19,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.FragmentActivity;
 
 public class Photos extends Activity
@@ -104,8 +107,14 @@ public class Photos extends Activity
 		{
 			try
 			{
+				ExifInterface exif = new ExifInterface(r.wide);
+				int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+				Bitmap bitmap = BitmapFactory.decodeFile(r.wide);
+				int angle = exifToDegrees(orientation);
+				bitmap = RotateBitmap(bitmap, angle);
+
 				ImageView im = findViewById(R.id.imageView);
-				im.setImageBitmap(BitmapFactory.decodeFile(r.wide));
+				im.setImageBitmap(bitmap);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -115,11 +124,41 @@ public class Photos extends Activity
 		{
 			try
 			{
+				ExifInterface exif = new ExifInterface(r.close);
+				int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+				Bitmap bitmap = BitmapFactory.decodeFile(r.close);
+				int angle = exifToDegrees(orientation);
+				bitmap = RotateBitmap(bitmap, angle);
+
 				ImageView im = findViewById(R.id.imageView2);
-				im.setImageBitmap(BitmapFactory.decodeFile(r.close));
+				im.setImageBitmap(bitmap);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	public static Bitmap RotateBitmap(Bitmap source, float angle)
+	{
+		Matrix matrix = new Matrix();
+		matrix.postRotate(angle);
+		Bitmap rotatedbitmap = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+		source.recycle();
+		return rotatedbitmap;
+	}
+
+	public static int exifToDegrees(int exifOrientation)
+	{
+		switch(exifOrientation)
+		{
+			case ExifInterface.ORIENTATION_ROTATE_90:
+				return 90;
+			case ExifInterface.ORIENTATION_ROTATE_180:
+				return 180;
+			case ExifInterface.ORIENTATION_ROTATE_270:
+				return 270;
+			default:
+				return 0;
 		}
 	}
 
