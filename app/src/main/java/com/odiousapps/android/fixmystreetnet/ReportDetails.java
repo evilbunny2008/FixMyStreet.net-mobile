@@ -15,6 +15,8 @@ import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
+import java.net.URLEncoder;
+
 public class ReportDetails extends Activity
 {
 	TextView address, council;
@@ -70,25 +72,14 @@ public class ReportDetails extends Activity
 		{
 			try
 			{
-//				String url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
-//				url += ll.latitude+","+ll.longitude;
-//				url += "&output=json&sensor=true&key=";
-//				url += getString(R.string.geocoding_api);
-
-				String url = "https://fixmystreet.net/data.txt";
+				String url = "https://fixmystreet.net/api/revgeocode.php";
+				url += "?serverKey=" + URLEncoder.encode(getString(R.string.serverKey), "UTF-8");
+				url += "&lat=" + ll.latitude + "&lng=" + ll.longitude;
 
 				Connection.Response resultResponse = Jsoup.connect(url).userAgent(Common.UA).maxBodySize(Integer.MAX_VALUE).ignoreContentType(true).execute();
 				JSONObject j = new JSONObject(resultResponse.body());
-				r.address = j.getJSONArray("results").getJSONObject(0).getString("formatted_address");
-				JSONArray ja = j.getJSONArray("results").getJSONObject(0).getJSONArray("address_components");
-				for(int i = 0; i < ja.length(); i++)
-				{
-					if(ja.getJSONObject(i).getJSONArray("types").getString(0).equals("administrative_area_level_2"))
-					{
-						r.council = ja.getJSONObject(i).getString("long_name");
-						break;
-					}
-				}
+				r.address = j.getString("address");
+				r.council = j.getString("council");
 
 				runOnUiThread(this::updateScreen);
 			} catch (Exception e) {

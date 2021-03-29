@@ -154,7 +154,8 @@ public class SignUp extends Activity
 				String pw = password.getText().toString();
 
 				String url = "https://fixmystreet.net/api/signup.php";
-				url += "?name=" + URLEncoder.encode(nm, "UTF-8");
+				url += "?serverKey=" + URLEncoder.encode(getString(R.string.serverKey), "UTF-8");
+				url += "&name=" + URLEncoder.encode(nm, "UTF-8");
 				url += "&email=" + URLEncoder.encode(em, "UTF-8");
 				url += "&mobile=" + URLEncoder.encode(mo, "UTF-8");
 				url += "&password=" + URLEncoder.encode(pw, "UTF-8");

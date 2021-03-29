@@ -124,7 +124,8 @@ public class SignIn extends Activity
 			try
 			{
 				String url = "https://fixmystreet.net/api/auth.php";
-				url += "?email=" + URLEncoder.encode(email.getText().toString(), "UTF-8");
+				url += "?serverKey=" + URLEncoder.encode(getString(R.string.serverKey), "UTF-8");
+				url += "&email=" + URLEncoder.encode(email.getText().toString(), "UTF-8");
 				url += "&password=" + URLEncoder.encode(password.getText().toString(), "UTF-8");
 
 				Connection.Response resultResponse = Jsoup.connect(url).userAgent(Common.UA).maxBodySize(Integer.MAX_VALUE).ignoreContentType(true).execute();
