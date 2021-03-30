@@ -7,10 +7,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -23,12 +23,15 @@ public class ReportDetails extends Activity
 	EditText summary, extra;
 	Spinner problem_dd;
 	private static Report r = new Report();
+	private Common common;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_details);
+
+		common = new Common(this);
 
 		try
 		{
@@ -66,7 +69,7 @@ public class ReportDetails extends Activity
 		council.setText(r.council);
 	}
 
-	void revgeocode(LatLng ll) throws Exception
+	void revgeocode(LatLng ll)
 	{
 		Thread t = new Thread(() ->
 		{
@@ -74,10 +77,19 @@ public class ReportDetails extends Activity
 			{
 				String url = "https://fixmystreet.net/api/revgeocode.php";
 				url += "?serverKey=" + URLEncoder.encode(getString(R.string.serverKey), "UTF-8");
+				url += "&email=" + URLEncoder.encode(common.GetStringPref("email", ""), "UTF-8");
+				url += "&password=" + URLEncoder.encode(common.GetStringPref("password", ""), "UTF-8");
 				url += "&lat=" + ll.latitude + "&lng=" + ll.longitude;
 
 				Connection.Response resultResponse = Jsoup.connect(url).userAgent(Common.UA).maxBodySize(Integer.MAX_VALUE).ignoreContentType(true).execute();
 				JSONObject j = new JSONObject(resultResponse.body());
+				if(j.getString("status").equals("FAIL"))
+				{
+					final String errmsg = j.getString("errmsg");
+					runOnUiThread(() -> failedAuth(errmsg));
+					return;
+				}
+
 				r.address = j.getString("address");
 				r.council = j.getString("council");
 
@@ -88,6 +100,11 @@ public class ReportDetails extends Activity
 		});
 
 		t.start();
+	}
+
+	void failedAuth(String errmsg)
+	{
+		Toast.makeText(getApplicationContext(), errmsg, Toast.LENGTH_LONG).show();
 	}
 
 	public void reportView(View v)

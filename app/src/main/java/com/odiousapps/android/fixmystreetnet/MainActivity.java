@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -212,7 +211,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			if(locationList.size() > 0)
 			{
 				Location location = locationList.get(locationList.size() - 1);
-				Log.i("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
+				Common.LogMessage("Location: " + location.getLatitude() + " " + location.getLongitude());
 
 				refreshLocation(location);
 			}

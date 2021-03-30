@@ -78,7 +78,8 @@ class Common
 			return defval;
 		}
 
-		LogMessage(name + "'='" + value + "'");
+		if(!name.equals("password"))
+			LogMessage(name + "'='" + value + "'");
 
 		return value;
 	}
