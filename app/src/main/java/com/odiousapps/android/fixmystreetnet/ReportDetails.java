@@ -69,7 +69,7 @@ public class ReportDetails extends Activity
 		council.setText(r.council);
 	}
 
-	void revgeocode(LatLng ll)
+	void revgeocode(final LatLng ll)
 	{
 		Thread t = new Thread(() ->
 		{
@@ -109,9 +109,9 @@ public class ReportDetails extends Activity
 
 	public void reportView(View v)
 	{
-		r.problem = problem_dd.getSelectedItem().toString();
 		r.summary = summary.getText().toString();
 		r.extra = extra.getText().toString();
+		r.defect = problem_dd.getSelectedItem().toString();
 		Intent i = new Intent(getBaseContext(), Photos.class);
 		i.putExtra("report", r.toString());
 		startActivity(i);

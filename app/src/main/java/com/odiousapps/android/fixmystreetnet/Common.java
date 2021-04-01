@@ -79,7 +79,9 @@ class Common
 		}
 
 		if(!name.equals("password"))
-			LogMessage(name + "'='" + value + "'");
+			LogMessage(name + "'='" + value);
+		else
+			LogMessage(name + "'='**************");
 
 		return value;
 	}

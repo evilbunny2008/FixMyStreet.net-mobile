@@ -6,8 +6,15 @@ import androidx.annotation.NonNull;
 
 class Report
 {
-	String lat, lng, problem, summary, extra, address, council;
-	String wide, close;
+	String lat;
+	String lng;
+	String defect;
+	String summary;
+	String extra;
+	String address;
+	String council;
+	String wide;
+	String close;
 
 	@NonNull
 	@Override
