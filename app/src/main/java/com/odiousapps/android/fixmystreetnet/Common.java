@@ -28,7 +28,7 @@ class Common
 			int len = value.indexOf("\n");
 			if(len <= 0)
 				len = value.length();
-			Log.i("weeWX Weather", "message='" + value.substring(0, len) + "'");
+			Log.i("FixMyStreet.net", "message='" + value.substring(0, len) + "'");
 		}
 	}
 

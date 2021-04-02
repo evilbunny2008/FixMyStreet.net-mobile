@@ -217,9 +217,8 @@ public class Photos extends Activity
 
 				OkHttpClient client = new OkHttpClient();
 				Response response = client.newCall(request).execute();
-				Common.LogMessage(response.body().string());
-				JSONObject j = new JSONObject(response.body().string());
 
+				JSONObject j = new JSONObject(response.body().string());
 				Common.LogMessage(j.toString());
 
 				runOnUiThread(this::updateScreen);
