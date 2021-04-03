@@ -18,8 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
@@ -185,6 +187,8 @@ public class Photos extends Activity
 	{
 		Thread t = new Thread(() ->
 		{
+			String errmsg = "There was a problem uploading to the server, please try again";
+
 			try
 			{
 				final MediaType MEDIA_TYPE = MediaType.parse("image/jpeg");
@@ -218,21 +222,24 @@ public class Photos extends Activity
 				OkHttpClient client = new OkHttpClient();
 				Response response = client.newCall(request).execute();
 
-				JSONObject j = new JSONObject(response.body().string());
+				JSONObject j = new JSONObject(Objects.requireNonNull(response.body()).string());
 				Common.LogMessage(j.toString());
-
-				runOnUiThread(this::updateScreen);
-			} catch (Exception e)
-			{
+				if(j.getString("status").equals("OK"))
+					errmsg = "Upload was a-ok...";
+			} catch (Exception e) {
 				e.printStackTrace();
+				errmsg = Arrays.toString(e.getStackTrace());
 			}
+
+			String finalErrmsg = errmsg;
+			runOnUiThread(() -> updateScreen(finalErrmsg));
 		});
 
 		t.start();
 	}
 
-	private void updateScreen()
+	private void updateScreen(String errmsg)
 	{
-		Common.LogMessage("test");
+		common.showMessage(errmsg);
 	}
 }

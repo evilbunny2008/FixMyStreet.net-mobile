@@ -1,175 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="@string/report_a_problem"
-        android:textAlignment="center"
-        android:textSize="30sp" />
-
     <LinearLayout
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="@string/address"
+            android:gravity="center_horizontal"
+            android:text="@string/report_a_problem"
+            android:textAlignment="center"
+            android:textSize="30sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/address"
+                android:gravity="end"
+                android:textAlignment="gravity"
+                android:textSize="18sp"
+                android:weightSum="3" />
+
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/loading"
+                android:layout_weight="3"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/council"
+                android:gravity="end"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/council"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:layout_weight="3"
+                android:text="@string/loading" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/problem_type"
+                android:gravity="end"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+
+            <Spinner
+                android:id="@+id/problem_dd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:entries="@array/common_problems"
+                android:spinnerMode="dropdown" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/problem_summary"
+                android:gravity="end"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/summary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:textSize="18sp"
+                tools:ignore="LabelFor"
+                android:autofillHints=""
+                android:inputType="text" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/summary_description"
             android:gravity="end"
             android:textAlignment="gravity"
-            android:textSize="18sp"
-            android:weightSum="3" />
-
-        <TextView
-            android:id="@+id/address"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/loading"
-            android:layout_weight="3"
             android:textSize="18sp" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
-
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="@string/council"
-            android:gravity="end"
-            android:textAlignment="gravity"
             android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/council"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_weight="3"
-            android:text="@string/loading" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="@string/problem_type"
-            android:gravity="end"
-            android:textAlignment="gravity"
-            android:textSize="18sp" />
-
-        <Spinner
-            android:id="@+id/problem_dd"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:entries="@array/common_problems"
-            android:spinnerMode="dropdown" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="@string/problem_summary"
-            android:gravity="end"
-            android:textAlignment="gravity"
+            android:text="@string/explain_what_s_wrong"
             android:textSize="18sp" />
 
         <EditText
-            android:id="@+id/password"
-            android:layout_width="0dp"
+            android:id="@+id/extra_details"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:ems="10"
+            android:gravity="start|top"
+            android:inputType="textMultiLine"
+            android:autofillHints="@+id/extra_details"
+            tools:ignore="LabelFor" />
+
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:textSize="18sp"
-            android:autofillHints="@+id/password"
-            tools:ignore="LabelFor"
-            android:inputType="" />
-
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/summary_description"
-        android:gravity="end"
-        android:textAlignment="gravity"
-        android:textSize="18sp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/explain_what_s_wrong"
-        android:textSize="18sp" />
-
-    <EditText
-        android:id="@+id/extra_details"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:ems="10"
-        android:gravity="start|top"
-        android:inputType="textMultiLine"
-        android:autofillHints="@+id/extra_details"
-        tools:ignore="LabelFor" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/extra_example"
-        android:gravity="end"
-        android:textAlignment="gravity"
-        android:textSize="18sp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/reportButton"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:background="#1f8dd6"
-            android:onClick="reportView"
-            android:text="@string/report"
-            android:textColor="#FFFFFF"
+            android:text="@string/extra_example"
+            android:gravity="end"
+            android:textAlignment="gravity"
             android:textSize="18sp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/reportButton"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:background="#1f8dd6"
+                android:onClick="reportView"
+                android:text="@string/report"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-</LinearLayout>
+</ScrollView>

@@ -3,6 +3,7 @@ package com.odiousapps.android.fixmystreetnet;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
 class Common
 {
@@ -84,5 +85,10 @@ class Common
 			LogMessage(name + "'='**************");
 
 		return value;
+	}
+
+	void showMessage(String msg)
+	{
+		Toast.makeText(this.context, msg, Toast.LENGTH_LONG).show();
 	}
 }

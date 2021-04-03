@@ -57,7 +57,7 @@ public class ReportDetails extends Activity
 			}
 		}
 
-		summary = findViewById(R.id.password);
+		summary = findViewById(R.id.summary);
 		extra = findViewById(R.id.extra_details);
 		address = findViewById(R.id.address);
 		council = findViewById(R.id.council);
