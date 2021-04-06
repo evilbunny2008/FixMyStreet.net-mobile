@@ -61,7 +61,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		lat = findViewById(R.id.lat);
 		lng = findViewById(R.id.lng);
 
-		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+		SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
 		assert mapFragment != null;
 		mapFragment.getMapAsync(this);
 
@@ -179,10 +179,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		reportProblemsLL.setVisibility(View.VISIBLE);
 		showProblemLL.setVisibility(View.GONE);
 
-//		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
-//		m.showInfoWindow();
-//		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
-//		m.showInfoWindow();
+		LatLng myLL = new LatLng(Float.parseFloat(lat.getText().toString()), Float.parseFloat(lng.getText().toString()));
+		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
+		m.showInfoWindow();
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLL, 16.0f));
 	}
 
 	private void refreshLocation(Location myLocation)
