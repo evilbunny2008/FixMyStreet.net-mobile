@@ -1,127 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/heading"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="@string/report_a_problem"
-        android:textAlignment="center"
-        android:textSize="30sp" />
-
     <LinearLayout
+        android:id="@+id/reportProblemLL"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        tools:visibility="gone">
 
         <TextView
-            android:id="@+id/latitude"
-            android:layout_width="0dp"
+            android:id="@+id/heading"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:gravity="end"
-            android:text="@string/latitude"
-            android:textAlignment="gravity"
-            android:textSize="18sp"
-            android:weightSum="3" />
+            android:gravity="center_horizontal"
+            android:text="@string/report_a_problem"
+            android:textAlignment="center"
+            android:textSize="30sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/latitude"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:gravity="end"
+                android:text="@string/latitude"
+                android:textAlignment="gravity"
+                android:textSize="18sp"
+                android:weightSum="3" />
+
+            <TextView
+                android:id="@+id/lat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/loading"
+                android:textSize="18sp"
+                android:weightSum="2" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/longitude"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:gravity="end"
+                android:text="@string/longitude"
+                android:textAlignment="gravity"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/lng"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="@string/loading"
+                android:textSize="18sp" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/lat"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="@string/loading"
-            android:textSize="18sp"
-            android:weightSum="2" />
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:id="@+id/signupin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+            <Button
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:background="#1f8dd6"
+                android:onClick="signInView"
+                android:text="@string/sign_in"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp" />
+
+            <Button
+                android:layout_width="125dp"
+                android:layout_height="wrap_content"
+                android:background="#1f8dd6"
+                android:onClick="signUpView"
+                android:text="@string/sign_up"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/report"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:background="#1f8dd6"
+                android:onClick="reportProblem"
+                android:text="@string/report"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/longitude"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:gravity="end"
-            android:text="@string/longitude"
-            android:textAlignment="gravity"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/lng"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="@string/loading"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <TextView
+        android:id="@+id/showProblemsLL"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp" />
-
-    <LinearLayout
-        android:id="@+id/signupin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="invisible">
-
-        <Button
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:background="#1f8dd6"
-            android:onClick="signInView"
-            android:text="@string/sign_in"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
+        android:orientation="vertical">
 
         <TextView
-            android:layout_width="50dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/view_problems"
+            android:textAlignment="center"
+            android:textSize="30sp" />
+
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp" />
 
-        <Button
-            android:layout_width="125dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#1f8dd6"
-            android:onClick="signUpView"
-            android:text="@string/sign_up"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:background="#1f8dd6"
+                android:onClick="reportAProblem"
+                android:text="@string/report_a_problem"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/report"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <Button
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:background="#1f8dd6"
-            android:onClick="reportProblem"
-            android:text="@string/report"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
-
-    </LinearLayout>
 
 
     <TextView

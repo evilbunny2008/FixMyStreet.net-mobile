@@ -37,7 +37,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private final int permsRequestCode = 200;
 	private GoogleMap mMap;
 	private TextView lat, lng;
-	private LinearLayout signupin, report;
+	private LinearLayout signupin, report, reportProblemsLL, showProblemLL;
 	private final DecimalFormat df = new DecimalFormat("#.######");
 	private Common common;
 
@@ -54,6 +54,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 		signupin = findViewById(R.id.signupin);
 		report = findViewById(R.id.report);
+
+		reportProblemsLL = findViewById(R.id.reportProblemLL);
+		showProblemLL = findViewById(R.id.showProblemsLL);
 
 		lat = findViewById(R.id.lat);
 		lng = findViewById(R.id.lng);
@@ -72,8 +75,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 					Manifest.permission.ACCESS_FINE_LOCATION,
 					Manifest.permission.ACCESS_COARSE_LOCATION
 			}, permsRequestCode);
-		} else {
-			doMore2();
 		}
 	}
 
@@ -109,15 +110,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
 		boolean hasPermission = false;
-		if (requestCode == permsRequestCode && grantResults.length >= 2
+		if(requestCode == permsRequestCode && grantResults.length >= 2
 				&& grantResults[0] == PackageManager.PERMISSION_GRANTED
 				&& grantResults[1] == PackageManager.PERMISSION_GRANTED)
 			hasPermission = true;
 
-		if (hasPermission)
+		if(!hasPermission)
 		{
-			doMore2();
-		} else {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage("You have rejected 1 or more permissions critical to using this app, if you clicked deny you" +
 					"may have to go into settings to allow").setCancelable(false)
@@ -125,9 +124,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			builder.create().show();
 		}
 	}
-
-	void doMore()
-	{}
 
 	@Override
 	public void onPause()
@@ -144,9 +140,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			mFusedLocationClient = null;
 		}
 	}
-
-	void doMore2()
-	{}
 
 	public void signInView(View v)
 	{
@@ -181,6 +174,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		startActivity(i);
 	}
 
+	public void reportAProblem(View v)
+	{
+		reportProblemsLL.setVisibility(View.VISIBLE);
+		showProblemLL.setVisibility(View.GONE);
+
+//		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
+//		m.showInfoWindow();
+//		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
+//		m.showInfoWindow();
+	}
+
 	private void refreshLocation(Location myLocation)
 	{
 		Common.LogMessage("Location Changed " + myLocation.getLatitude() + " and " + myLocation.getLongitude());
@@ -189,8 +193,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 16.0f));
 
 		LatLng myLL = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
-		m.showInfoWindow();
 		mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
 
 		String llat = df.format(myLocation.getLatitude());
@@ -226,8 +228,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-34, 151), 12.0f));
 
 		LatLng myLL = new LatLng(-33.859046, 151.2050339);
-		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
-		m.showInfoWindow();
 		mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
 
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
@@ -267,6 +267,5 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			{}
 		});
 		mMap.getUiSettings().setMapToolbarEnabled(false);
-		doMore();
 	}
 }
