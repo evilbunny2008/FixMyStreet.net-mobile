@@ -5,6 +5,12 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+
+import java.net.URLEncoder;
+
 class Common
 {
 	private final Context context;
@@ -43,22 +49,22 @@ class Common
 		LogMessage("Updating '" + name);
 	}
 
-	void RemovePref(String name)
-	{
-		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
-		SharedPreferences.Editor editor = settings.edit();
-		editor.remove(name);
-		editor.apply();
+//	void RemovePref(String name)
+//	{
+//		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+//		SharedPreferences.Editor editor = settings.edit();
+//		editor.remove(name);
+//		editor.apply();
+//
+//		LogMessage("Removing '" + name + "'");
+//	}
 
-		LogMessage("Removing '" + name + "'");
-	}
-
-	void commit()
-	{
-		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
-		SharedPreferences.Editor editor = settings.edit();
-		editor.apply();
-	}
+//	void commit()
+//	{
+//		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+//		SharedPreferences.Editor editor = settings.edit();
+//		editor.apply();
+//	}
 
 	String GetStringPref(String name, String defval)
 	{
@@ -68,12 +74,10 @@ class Common
 		try
 		{
 			value = settings.getString(name, defval);
-		} catch (ClassCastException cce)
-		{
+		} catch (ClassCastException cce) {
 			cce.printStackTrace();
 			return defval;
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			LogMessage("GetStringPref(" + name + ") Err: " + e.toString());
 			e.printStackTrace();
 			return defval;
@@ -90,5 +94,21 @@ class Common
 	void showMessage(String msg)
 	{
 		Toast.makeText(this.context, msg, Toast.LENGTH_LONG).show();
+	}
+
+	String grabMarkers(double north, double east, double south, double west)
+	{
+		try
+		{
+			String url = "https://fixmystreet.net/api/problems.php";
+			url += "?serverKey=" + URLEncoder.encode(context.getString(R.string.serverKey), "UTF-8");
+			url += "&north=" + north + "&east=" + east + "&south=" + south + "&west=" + west;
+			Connection.Response resultResponse = Jsoup.connect(url).userAgent(Common.UA).maxBodySize(Integer.MAX_VALUE).ignoreContentType(true).execute();
+			return resultResponse.body();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 }

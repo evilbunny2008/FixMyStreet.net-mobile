@@ -9,6 +9,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -25,10 +26,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -204,6 +208,43 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		updateButtons();
 	}
 
+	void displayMarkers(String str)
+	{
+		String[] markers = str.trim().split("\n");
+		for (String marker : markers)
+		{
+			String[] bits = marker.split("\\|");
+			float marker_colour = BitmapDescriptorFactory.HUE_RED;
+
+			switch(bits[6])
+			{
+				case "blue":
+					marker_colour = BitmapDescriptorFactory.HUE_AZURE;
+					break;
+				case "green":
+					marker_colour = BitmapDescriptorFactory.HUE_GREEN;
+					break;
+				case "orange":
+					marker_colour = BitmapDescriptorFactory.HUE_ORANGE;
+					break;
+				case "yellow":
+					marker_colour = BitmapDescriptorFactory.HUE_YELLOW;
+					break;
+			}
+
+			mMap.addMarker(new MarkerOptions()
+					.position(new LatLng(Float.parseFloat(bits[1]), Float.parseFloat(bits[2])))
+					.title(bits[3])
+					.snippet(bits[5])
+					.icon(BitmapDescriptorFactory.defaultMarker(marker_colour)));
+		}
+	}
+
+	void failedAuth(String errmsg)
+	{
+		common.showMessage(errmsg);
+	}
+
 	LocationCallback mLocationCallback = new LocationCallback()
 	{
 		@Override
@@ -220,6 +261,33 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		}
 	};
 
+	private GoogleMap.OnCameraIdleListener onCameraIdleListener = new GoogleMap.OnCameraIdleListener()
+	{
+		@Override
+		public void onCameraIdle()
+		{
+			final LatLngBounds ll = mMap.getProjection().getVisibleRegion().latLngBounds;
+			Thread t = new Thread(() ->
+			{
+				try
+				{
+					String j = common.grabMarkers(ll.northeast.latitude, ll.northeast.longitude, ll.southwest.latitude, ll.southwest.longitude);
+					if(j == null)
+					{
+						runOnUiThread(() -> failedAuth("Unable to download marker locations."));
+						return;
+					}
+
+					runOnUiThread(() -> displayMarkers(j));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			t.start();
+		}
+	};
+
 	@Override
 	public void onMapReady(GoogleMap googleMap)
 	{
@@ -229,6 +297,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 		LatLng myLL = new LatLng(-33.859046, 151.2050339);
 		mMap.moveCamera(CameraUpdateFactory.newLatLng(myLL));
+
+		mMap.setOnCameraIdleListener(onCameraIdleListener);
 
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 		{
@@ -266,6 +336,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			public void onMarkerDrag(Marker arg0)
 			{}
 		});
+
 		mMap.getUiSettings().setMapToolbarEnabled(false);
 	}
 }
