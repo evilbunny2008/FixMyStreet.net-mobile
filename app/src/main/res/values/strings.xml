@@ -28,6 +28,7 @@
     <string name="close_up_shot">Close up shot</string>
     <string name="chooseaction">Choose a camera or photo option</string>
     <string name="view_problems">View Problems</string>
+    <string name="update_a_problem">Update A Problem</string>
 
     <string-array name="common_problems">
         <item>Abandoned Vehicle</item>

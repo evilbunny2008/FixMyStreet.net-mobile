@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
@@ -104,7 +103,23 @@ class Common
 			url += "?serverKey=" + URLEncoder.encode(context.getString(R.string.serverKey), "UTF-8");
 			url += "&north=" + north + "&east=" + east + "&south=" + south + "&west=" + west;
 			Connection.Response resultResponse = Jsoup.connect(url).userAgent(Common.UA).maxBodySize(Integer.MAX_VALUE).ignoreContentType(true).execute();
-			return resultResponse.body();
+			return resultResponse.body().trim();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	String grabInfo(String id)
+	{
+		try
+		{
+			String url = "https://fixmystreet.net/api/extra.php";
+			url += "?serverKey=" + URLEncoder.encode(context.getString(R.string.serverKey), "UTF-8");
+			url += "&id=" + URLEncoder.encode(id, "UTF-8");
+			Connection.Response resultResponse = Jsoup.connect(url).userAgent(Common.UA).maxBodySize(Integer.MAX_VALUE).ignoreContentType(true).execute();
+			return resultResponse.body().trim();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

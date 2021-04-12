@@ -9,7 +9,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -32,8 +31,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback
@@ -44,6 +43,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private LinearLayout signupin, report, reportProblemsLL, showProblemLL;
 	private final DecimalFormat df = new DecimalFormat("#.######");
 	private Common common;
+	private final HashMap<String, String> markerMap = new HashMap<>();
 
 	LocationRequest mLocationRequest;
 	FusedLocationProviderClient mFusedLocationClient;
@@ -98,7 +98,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				lng.getText().toString().equals(getString(R.string.loading)))
 			return;
 
-		if (common.GetStringPref("lastauth", "0").equals("1"))
+		String s = common.GetStringPref("lastauth", "0");
+		if((s.equals("1") && signupin.getVisibility() == View.GONE) ||
+				(s.equals("0") && signupin.getVisibility() == View.VISIBLE))
+			return;
+
+		if (s.equals("1"))
 		{
 			signupin.setVisibility(View.GONE);
 			report.setVisibility(View.VISIBLE);
@@ -183,6 +188,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		reportProblemsLL.setVisibility(View.VISIBLE);
 		showProblemLL.setVisibility(View.GONE);
 
+		lat.setText(df.format(mMap.getCameraPosition().target.latitude));
+		lng.setText(df.format(mMap.getCameraPosition().target.longitude));
 		LatLng myLL = new LatLng(Float.parseFloat(lat.getText().toString()), Float.parseFloat(lng.getText().toString()));
 		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
 		m.showInfoWindow();
@@ -210,7 +217,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 	void displayMarkers(String str)
 	{
-		String[] markers = str.trim().split("\n");
+		if(str.equals(""))
+			return;
+
+		String[] markers = str.split("\n");
 		for (String marker : markers)
 		{
 			String[] bits = marker.split("\\|");
@@ -232,11 +242,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 					break;
 			}
 
-			mMap.addMarker(new MarkerOptions()
+			Marker myMarker = mMap.addMarker(new MarkerOptions()
 					.position(new LatLng(Float.parseFloat(bits[1]), Float.parseFloat(bits[2])))
 					.title(bits[3])
 					.snippet(bits[5])
 					.icon(BitmapDescriptorFactory.defaultMarker(marker_colour)));
+			String id = myMarker.getId();
+			markerMap.put(id, "" + bits[0]);
 		}
 	}
 
@@ -261,7 +273,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		}
 	};
 
-	private GoogleMap.OnCameraIdleListener onCameraIdleListener = new GoogleMap.OnCameraIdleListener()
+	private final GoogleMap.OnCameraIdleListener onCameraIdleListener = new GoogleMap.OnCameraIdleListener()
 	{
 		@Override
 		public void onCameraIdle()
@@ -335,6 +347,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			@Override
 			public void onMarkerDrag(Marker arg0)
 			{}
+		});
+
+		mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener()
+		{
+			@Override
+			public void onInfoWindowClick(Marker marker)
+			{
+				String actionId = markerMap.get(marker.getId());
+				Intent i = new Intent(MainActivity.this, DetailReport.class);
+				i.putExtra("id", actionId);
+				startActivity(i);
+			}
 		});
 
 		mMap.getUiSettings().setMapToolbarEnabled(false);
