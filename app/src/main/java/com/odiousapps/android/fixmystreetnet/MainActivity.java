@@ -44,6 +44,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private final DecimalFormat df = new DecimalFormat("#.######");
 	private Common common;
 	private final HashMap<String, String> markerMap = new HashMap<>();
+	private Marker dragMarker;
 
 	LocationRequest mLocationRequest;
 	FusedLocationProviderClient mFusedLocationClient;
@@ -76,8 +77,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		{
 			ActivityCompat.requestPermissions(this, new String[]
 			{
-					Manifest.permission.ACCESS_FINE_LOCATION,
-					Manifest.permission.ACCESS_COARSE_LOCATION
+				Manifest.permission.ACCESS_FINE_LOCATION,
+				Manifest.permission.ACCESS_COARSE_LOCATION
 			}, permsRequestCode);
 		}
 	}
@@ -191,8 +192,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		lat.setText(df.format(mMap.getCameraPosition().target.latitude));
 		lng.setText(df.format(mMap.getCameraPosition().target.longitude));
 		LatLng myLL = new LatLng(Float.parseFloat(lat.getText().toString()), Float.parseFloat(lng.getText().toString()));
-		Marker m = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
-		m.showInfoWindow();
+		dragMarker = mMap.addMarker(new MarkerOptions().position(myLL).title("Drag this marker to the location of the problem.").draggable(true));
+		dragMarker.showInfoWindow();
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLL, 16.0f));
 	}
 
@@ -228,6 +229,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 			switch(bits[6])
 			{
+				case "grey":
 				case "blue":
 					marker_colour = BitmapDescriptorFactory.HUE_AZURE;
 					break;
@@ -301,6 +303,22 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	};
 
 	@Override
+	public void onBackPressed()
+	{
+		if(dragMarker != null)
+		{
+			reportProblemsLL.setVisibility(View.GONE);
+			showProblemLL.setVisibility(View.VISIBLE);
+			dragMarker.remove();
+			dragMarker = null;
+		} else {
+			super.onBackPressed();
+			Common.LogMessage("finishing up.");
+			finish();
+		}
+	}
+
+	@Override
 	public void onMapReady(GoogleMap googleMap)
 	{
 		mMap = googleMap;
@@ -349,16 +367,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			{}
 		});
 
-		mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener()
+		mMap.setOnInfoWindowClickListener(marker ->
 		{
-			@Override
-			public void onInfoWindowClick(Marker marker)
-			{
-				String actionId = markerMap.get(marker.getId());
-				Intent i = new Intent(MainActivity.this, DetailReport.class);
-				i.putExtra("id", actionId);
-				startActivity(i);
-			}
+			String actionId = markerMap.get(marker.getId());
+			Intent i = new Intent(MainActivity.this, DetailReport.class);
+			i.putExtra("id", actionId);
+			startActivity(i);
 		});
 
 		mMap.getUiSettings().setMapToolbarEnabled(false);

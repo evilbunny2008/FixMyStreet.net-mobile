@@ -1,11 +1,14 @@
 package com.odiousapps.android.fixmystreetnet;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -15,7 +18,9 @@ import android.widget.ImageView;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -41,6 +46,7 @@ public class Photos extends Activity
 
 	private static final int REQUEST_IMAGE_CAPTURE1 = 1;
 	private static final int REQUEST_IMAGE_CAPTURE2 = 2;
+	private static final String TEMP_IMAGE_NAME = "tempImage";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -73,6 +79,14 @@ public class Photos extends Activity
 
 	public void wideShotView(View v)
 	{
+		ImageView im = findViewById(R.id.imageView);
+		try
+		{
+			im.setImageBitmap(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		if (takePictureIntent.resolveActivity(getPackageManager()) == null)
 			return;
@@ -81,8 +95,7 @@ public class Photos extends Activity
 		try
 		{
 			photoFile = createImageFile(true);
-		} catch (IOException ex)
-		{
+		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 
@@ -96,6 +109,14 @@ public class Photos extends Activity
 
 	public void closeShotView(View v)
 	{
+		ImageView im = findViewById(R.id.imageView2);
+		try
+		{
+			im.setImageBitmap(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		if (takePictureIntent.resolveActivity(getPackageManager()) == null)
 			return;
@@ -104,17 +125,23 @@ public class Photos extends Activity
 		try
 		{
 			photoFile = createImageFile(false);
-		} catch (IOException ex)
-		{
+		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 
 		if (photoFile == null)
 			return;
 
+		Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		Intent chooser = new Intent(Intent.ACTION_CHOOSER);
+		chooser.putExtra(Intent.EXTRA_INTENT, galleryIntent);
+		chooser.putExtra(Intent.EXTRA_TITLE, getString(R.string.chooseaction));
+		Intent[] intentArray = {takePictureIntent};
+		chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
+
 		Uri photoURI = FileProvider.getUriForFile(this, "com.odiousapps.android.fixmystreetnet.provider", photoFile);
 		takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-		startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE2);
+		startActivityForResult(chooser, REQUEST_IMAGE_CAPTURE2);
 	}
 
 	@Override
@@ -134,27 +161,68 @@ public class Photos extends Activity
 
 				ImageView im = findViewById(R.id.imageView);
 				im.setImageBitmap(bitmap);
-			} catch (Exception e)
-			{
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 
 		if (requestCode == REQUEST_IMAGE_CAPTURE2 && resultCode == FragmentActivity.RESULT_OK)
 		{
-			try
+			File imageFile = new File(this.getExternalCacheDir(), TEMP_IMAGE_NAME);;
+			boolean isCamera = (data == null || data.getData() == null  ||
+					data.getData().toString().contains(imageFile.toString()));
+			if(isCamera)
 			{
-				ExifInterface exif = new ExifInterface(r.close);
-				int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
-				Bitmap bitmap = BitmapFactory.decodeFile(r.close);
-				int angle = exifToDegrees(orientation);
-				bitmap = RotateBitmap(bitmap, angle);
+				try
+				{
+					ExifInterface exif = new ExifInterface(r.close);
+					int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+					Bitmap bitmap = BitmapFactory.decodeFile(r.close);
+					int angle = exifToDegrees(orientation);
+					bitmap = RotateBitmap(bitmap, angle);
 
-				ImageView im = findViewById(R.id.imageView2);
-				im.setImageBitmap(bitmap);
-			} catch (Exception e)
-			{
-				e.printStackTrace();
+					ImageView im = findViewById(R.id.imageView2);
+					im.setImageBitmap(bitmap);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				try
+				{
+					int result = 0;
+					if(Build.VERSION.SDK_INT >= 29)
+					{
+						String[] columns = {MediaStore.Images.Media.ORIENTATION};
+						Cursor cursor = null;
+						cursor = this.getContentResolver().query(data.getData(), columns, null, null, null);
+						if(cursor != null && cursor.moveToFirst())
+						{
+							int orientationColumnIndex = cursor.getColumnIndex(columns[0]);
+							result = cursor.getInt(orientationColumnIndex);
+						}
+						if(cursor != null)
+							cursor.close();
+
+						Common.LogMessage("Image rotation: " + result);
+					}
+
+					final InputStream ist = this.getContentResolver().openInputStream(data.getData());
+					Bitmap bitmap = BitmapFactory.decodeStream(ist);
+					ist.close();
+					if(Build.VERSION.SDK_INT >= 29 && result != 0)
+						bitmap = RotateBitmap(bitmap, result);
+
+					File f = createImageFile(false);
+					FileOutputStream fos = new FileOutputStream(f);
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos);
+					fos.flush();
+					fos.close();
+
+					ImageView im = findViewById(R.id.imageView2);
+					im.setImageBitmap(bitmap);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
