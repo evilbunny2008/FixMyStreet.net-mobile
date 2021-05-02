@@ -1,7 +1,6 @@
 package com.odiousapps.android.fixmystreetnet;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -102,9 +101,16 @@ public class Photos extends Activity
 		if (photoFile == null)
 			return;
 
+		Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+		Intent chooser = new Intent(Intent.ACTION_CHOOSER);
+		chooser.putExtra(Intent.EXTRA_INTENT, galleryIntent);
+		chooser.putExtra(Intent.EXTRA_TITLE, getString(R.string.chooseaction));
+		Intent[] intentArray = {takePictureIntent};
+		chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
+
 		Uri photoURI = FileProvider.getUriForFile(this, "com.odiousapps.android.fixmystreetnet.provider", photoFile);
 		takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-		startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE1);
+		startActivityForResult(chooser, REQUEST_IMAGE_CAPTURE1);
 	}
 
 	public void closeShotView(View v)
@@ -151,24 +157,67 @@ public class Photos extends Activity
 
 		if (requestCode == REQUEST_IMAGE_CAPTURE1 && resultCode == RESULT_OK)
 		{
-			try
+			File imageFile = new File(this.getExternalCacheDir(), TEMP_IMAGE_NAME);
+			boolean isCamera = (data == null || data.getData() == null  ||
+					data.getData().toString().contains(imageFile.toString()));
+			if(isCamera)
 			{
-				ExifInterface exif = new ExifInterface(r.wide);
-				int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
-				Bitmap bitmap = BitmapFactory.decodeFile(r.wide);
-				int angle = exifToDegrees(orientation);
-				bitmap = RotateBitmap(bitmap, angle);
+				try
+				{
+					ExifInterface exif = new ExifInterface(r.wide);
+					int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+					Bitmap bitmap = BitmapFactory.decodeFile(r.wide);
+					int angle = exifToDegrees(orientation);
+					bitmap = RotateBitmap(bitmap, angle);
 
-				ImageView im = findViewById(R.id.imageView);
-				im.setImageBitmap(bitmap);
-			} catch (Exception e) {
-				e.printStackTrace();
+					ImageView im = findViewById(R.id.imageView);
+					im.setImageBitmap(bitmap);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				try
+				{
+					int result = 0;
+					if(Build.VERSION.SDK_INT >= 29)
+					{
+						String[] columns = {MediaStore.Images.Media.ORIENTATION};
+						Cursor cursor;
+						cursor = this.getContentResolver().query(data.getData(), columns, null, null, null);
+						if(cursor != null && cursor.moveToFirst())
+						{
+							int orientationColumnIndex = cursor.getColumnIndex(columns[0]);
+							result = cursor.getInt(orientationColumnIndex);
+						}
+						if(cursor != null)
+							cursor.close();
+
+						Common.LogMessage("Image rotation: " + result);
+					}
+
+					final InputStream ist = this.getContentResolver().openInputStream(data.getData());
+					Bitmap bitmap = BitmapFactory.decodeStream(ist);
+					ist.close();
+					if(Build.VERSION.SDK_INT >= 29 && result != 0)
+						bitmap = RotateBitmap(bitmap, result);
+
+					File f = createImageFile(true);
+					FileOutputStream fos = new FileOutputStream(f);
+					bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos);
+					fos.flush();
+					fos.close();
+
+					ImageView im = findViewById(R.id.imageView);
+					im.setImageBitmap(bitmap);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
 		if (requestCode == REQUEST_IMAGE_CAPTURE2 && resultCode == FragmentActivity.RESULT_OK)
 		{
-			File imageFile = new File(this.getExternalCacheDir(), TEMP_IMAGE_NAME);;
+			File imageFile = new File(this.getExternalCacheDir(), TEMP_IMAGE_NAME);
 			boolean isCamera = (data == null || data.getData() == null  ||
 					data.getData().toString().contains(imageFile.toString()));
 			if(isCamera)
@@ -193,7 +242,7 @@ public class Photos extends Activity
 					if(Build.VERSION.SDK_INT >= 29)
 					{
 						String[] columns = {MediaStore.Images.Media.ORIENTATION};
-						Cursor cursor = null;
+						Cursor cursor;
 						cursor = this.getContentResolver().query(data.getData(), columns, null, null, null);
 						if(cursor != null && cursor.moveToFirst())
 						{
@@ -253,6 +302,12 @@ public class Photos extends Activity
 
 	public void reportView(View v)
 	{
+		if(r.wide == null || r.close == null)
+		{
+			common.showMessage("You must pick or take at least 2 photos, this speeds up f");
+			return;
+		}
+
 		Thread t = new Thread(() ->
 		{
 			String errmsg = "There was a problem uploading to the server, please try again";

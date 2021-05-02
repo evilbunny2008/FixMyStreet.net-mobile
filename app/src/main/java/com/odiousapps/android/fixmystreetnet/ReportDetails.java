@@ -109,8 +109,23 @@ public class ReportDetails extends Activity
 
 	public void reportView(View v)
 	{
-		r.summary = summary.getText().toString();
-		r.extra = extra.getText().toString();
+		String summ = summary.getText().toString().trim();
+		if(summ.length() < 20)
+		{
+			common.showMessage("Problem Summary wasn't filled in, or doesn't seem long enough.");
+			return;
+		}
+
+		r.summary = summ;
+
+		String ext = extra.getText().toString();
+		if(ext.length() < 20)
+		{
+			common.showMessage("You failed to enter enough detail in the explaination area.");
+			return;
+		}
+
+		r.extra = ext;
 		r.defect = problem_dd.getSelectedItem().toString();
 		Intent i = new Intent(getBaseContext(), Photos.class);
 		i.putExtra("report", r.toString());
