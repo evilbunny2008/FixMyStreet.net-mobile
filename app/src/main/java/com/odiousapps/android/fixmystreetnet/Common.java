@@ -2,6 +2,9 @@ package com.odiousapps.android.fixmystreetnet;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -9,6 +12,10 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 import java.net.URLEncoder;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 class Common
 {
@@ -125,5 +132,26 @@ class Common
 		}
 
 		return null;
+	}
+
+	Bitmap downloadImage(String URL)
+	{
+		try
+		{
+			Request request = new Request.Builder().header("User-Agent", UA).url(URL).build();
+			OkHttpClient client = new OkHttpClient();
+			Response response = client.newCall(request).execute();
+			byte[] image = response.body().bytes();
+			return BitmapFactory.decodeByteArray(image, 0, image.length);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static int pxToDp(int px)
+	{
+		return (int)(px * Resources.getSystem().getDisplayMetrics().density);
 	}
 }

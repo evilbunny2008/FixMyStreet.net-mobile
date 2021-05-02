@@ -155,30 +155,21 @@
             android:layout_height="wrap_content"
             android:textSize="18sp" />
 
-        <WebView
-            android:id="@+id/pics"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            tools:ignore="WebViewLayout" />
+            android:layout_height="240dp"
+            tools:ignore="NestedScrolling">
 
-        <!--        <LinearLayout-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:gravity="center"-->
-<!--            android:orientation="horizontal">-->
+            <LinearLayout
+                android:id="@+id/gallery"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="horizontal">
 
-<!--            <Button-->
-<!--                android:id="@+id/reportButton"-->
-<!--                android:layout_width="250dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:background="#1f8dd6"-->
-<!--                android:onClick="reportView"-->
-<!--                android:text="@string/report"-->
-<!--                android:textColor="#FFFFFF"-->
-<!--                android:textSize="18sp" />-->
-
-<!--        </LinearLayout>-->
+            </LinearLayout>
+        </ScrollView>
 
     </LinearLayout>
 

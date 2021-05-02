@@ -2,8 +2,10 @@ package com.odiousapps.android.fixmystreetnet;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.webkit.WebView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -19,7 +21,7 @@ public class DetailReport extends Activity
 	private TextView problem;
 	private TextView summary;
 	private TextView extra;
-	private WebView pics;
+	private LinearLayout gallery;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -36,7 +38,7 @@ public class DetailReport extends Activity
 		problem = findViewById(R.id.problem);
 		summary = findViewById(R.id.summary);
 		extra = findViewById(R.id.extra_details);
-		pics = findViewById(R.id.pics);
+		gallery = findViewById(R.id.gallery);
 
 		Intent i = getIntent();
 		final String id = (String)i.getSerializableExtra("id");
@@ -77,20 +79,31 @@ public class DetailReport extends Activity
 			summary.setText(j.getString("summary"));
 			extra.setText(j.getString("extra"));
 
-			StringBuilder pichtml = new StringBuilder("<head><body><table style='width:100%'><tr>");
 			JSONArray ja = j.getJSONArray("photos");
 			for(int i = 0; i < ja.length(); i++)
 			{
 				JSONObject pic = ja.getJSONObject(i);
-				pichtml.append("<td align='center'><img src='https://fixmystreet.net/")
-					   .append(pic.getString("thumb"))
-				       .append("' /></td>");
+				String url = "https://fixmystreet.net/" + pic.getString("thumb");
+
+				Thread t = new Thread(() ->
+						runOnUiThread(() -> displayBitmap(common.downloadImage(url))));
+
+				t.start();
 			}
-			pichtml.append("</tr></table></body></html>");
-			pics.loadDataWithBaseURL("file:///android_res/drawable/", pichtml.toString().trim(), "text/html", "utf-8", null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	void displayBitmap(Bitmap bitmap)
+	{
+		int height = Common.pxToDp(240);
+		int width = Common.pxToDp(240);
+		ImageView im = new ImageView(getApplicationContext());
+		im.setLayoutParams(new LinearLayout.LayoutParams(width, height));
+		im.setScaleType(ImageView.ScaleType.CENTER_CROP);
+		im.setImageBitmap(bitmap);
+		gallery.addView(im);
 	}
 
 	void failedAuth(String errmsg)
