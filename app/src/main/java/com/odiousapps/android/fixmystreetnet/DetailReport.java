@@ -86,7 +86,10 @@ public class DetailReport extends Activity
 				String url = "https://fixmystreet.net/" + pic.getString("thumb");
 
 				Thread t = new Thread(() ->
-						runOnUiThread(() -> displayBitmap(common.downloadImage(url))));
+				{
+					Bitmap bitmap = common.downloadImage(url);
+					runOnUiThread(() -> displayBitmap(bitmap));
+				});
 
 				t.start();
 			}
@@ -97,11 +100,11 @@ public class DetailReport extends Activity
 
 	void displayBitmap(Bitmap bitmap)
 	{
-		int height = Common.pxToDp(240);
-		int width = Common.pxToDp(240);
+		int height = Common.pxToDp(300);
+		int width = Common.pxToDp(300);
 		ImageView im = new ImageView(getApplicationContext());
 		im.setLayoutParams(new LinearLayout.LayoutParams(width, height));
-		im.setScaleType(ImageView.ScaleType.CENTER_CROP);
+		im.setScaleType(ImageView.ScaleType.CENTER);
 		im.setImageBitmap(bitmap);
 		gallery.addView(im);
 	}

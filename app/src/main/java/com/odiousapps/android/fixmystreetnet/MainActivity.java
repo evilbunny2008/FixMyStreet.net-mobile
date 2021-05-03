@@ -218,14 +218,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 	void displayMarkers(String str)
 	{
-		if(str.equals(""))
+		if(str.trim().equals(""))
 			return;
 
-		String[] markers = str.split("\n");
+		String[] markers = str.trim().split("\n");
+		if(markers.length <= 0)
+			return;
+
 		for (String marker : markers)
 		{
 			String[] bits = marker.split("\\|");
-			float marker_colour = BitmapDescriptorFactory.HUE_RED;
+			float marker_colour;
 
 			switch(bits[6])
 			{
@@ -241,6 +244,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 					break;
 				case "yellow":
 					marker_colour = BitmapDescriptorFactory.HUE_YELLOW;
+					break;
+				default:
+					marker_colour = BitmapDescriptorFactory.HUE_RED;
 					break;
 			}
 
