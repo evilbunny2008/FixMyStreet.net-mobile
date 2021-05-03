@@ -100,11 +100,10 @@ public class DetailReport extends Activity
 
 	void displayBitmap(Bitmap bitmap)
 	{
-		int height = Common.pxToDp(300);
-		int width = Common.pxToDp(300);
+		int height = Common.pxToDp(240);
+		int width = Common.pxToDp(240);
 		ImageView im = new ImageView(getApplicationContext());
 		im.setLayoutParams(new LinearLayout.LayoutParams(width, height));
-		im.setScaleType(ImageView.ScaleType.CENTER);
 		im.setImageBitmap(bitmap);
 		gallery.addView(im);
 	}
