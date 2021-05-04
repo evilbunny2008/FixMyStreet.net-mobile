@@ -81,7 +81,8 @@ public class DetailReport extends Activity
 				for(int k = 0; k < ja.length(); k++)
 				{
 					JSONObject pic = ja.getJSONObject(k);
-					String url = "https://fixmystreet.net/" + pic.getString("thumb");
+//					String url = "https://fixmystreet.net/" + pic.getString("thumb");
+					String url = "https://fixmystreet.net/" + pic.getString("file_path");
 
 					Bitmap bitmap = common.downloadImage(url);
 					runOnUiThread(() -> addBitmap(bitmap));
@@ -103,7 +104,15 @@ public class DetailReport extends Activity
 
 	void updateCarousel()
 	{
-		ImageListener imageListener = (position, imageView) -> imageView.setImageBitmap(bitmapArray.get(position));
+		ImageListener imageListener = new ImageListener()
+		{
+			@Override
+			public void setImageForPosition(int position, ImageView imageView)
+			{
+				imageView.setImageBitmap(bitmapArray.get(position));
+				imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+			}
+		};
 		Common.LogMessage("bitmapArray.size() == " + bitmapArray.size());
 		carouselView.setImageListener(imageListener);
 		carouselView.setPageCount(bitmapArray.size());
