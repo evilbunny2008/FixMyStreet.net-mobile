@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.synnapps.carouselview.CarouselView;
@@ -28,7 +26,7 @@ public class DetailReport extends Activity
 	private TextView summary;
 	private TextView extra;
 	private CarouselView carouselView;
-	private ArrayList<Bitmap> bitmapArray = new ArrayList<Bitmap>();
+	private final ArrayList<Bitmap> bitmapArray = new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -104,14 +102,10 @@ public class DetailReport extends Activity
 
 	void updateCarousel()
 	{
-		ImageListener imageListener = new ImageListener()
+		ImageListener imageListener = (position, imageView) ->
 		{
-			@Override
-			public void setImageForPosition(int position, ImageView imageView)
-			{
-				imageView.setImageBitmap(bitmapArray.get(position));
-				imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-			}
+			imageView.setImageBitmap(bitmapArray.get(position));
+			imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		};
 		Common.LogMessage("bitmapArray.size() == " + bitmapArray.size());
 		carouselView.setImageListener(imageListener);
