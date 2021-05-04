@@ -4,12 +4,18 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.synnapps.carouselview.CarouselView;
+import com.synnapps.carouselview.ImageListener;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class DetailReport extends Activity
 {
@@ -21,7 +27,8 @@ public class DetailReport extends Activity
 	private TextView problem;
 	private TextView summary;
 	private TextView extra;
-	private LinearLayout gallery;
+	private CarouselView carouselView;
+	private ArrayList<Bitmap> bitmapArray = new ArrayList<Bitmap>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -38,7 +45,7 @@ public class DetailReport extends Activity
 		problem = findViewById(R.id.problem);
 		summary = findViewById(R.id.summary);
 		extra = findViewById(R.id.extra_details);
-		gallery = findViewById(R.id.gallery);
+		carouselView = findViewById(R.id.carouselView);
 
 		Intent i = getIntent();
 		final String id = (String)i.getSerializableExtra("id");
@@ -47,14 +54,40 @@ public class DetailReport extends Activity
 		{
 			try
 			{
-				String j = common.grabInfo(id);
-				if(j == null)
+				String str = common.grabInfo(id).trim();
+				if(str == null)
 				{
 					runOnUiThread(() -> failedAuth("Unable to download marker locations."));
 					return;
 				}
 
-				runOnUiThread(() -> displayInfo(j));
+				JSONObject j = new JSONObject(str);
+				final String tmpstr1 = j.getString("latitude");
+				runOnUiThread(() -> lat.setText(tmpstr1));
+				final String tmpstr2 = j.getString("longitude");
+				runOnUiThread(() -> lng.setText(tmpstr2));
+				final String tmpstr3 = j.getString("address");
+				runOnUiThread(() -> address.setText(tmpstr3));
+				final String tmpstr4 = j.getString("council");
+				runOnUiThread(() -> council.setText(tmpstr4));
+				final String tmpstr5 = j.getString("defect");
+				runOnUiThread(() -> problem.setText(tmpstr5));
+				final String tmpstr6 = j.getString("summary");
+				runOnUiThread(() -> summary.setText(tmpstr6));
+				final String tmpstr7 = j.getString("extra");
+				runOnUiThread(() -> extra.setText(tmpstr7));
+
+				JSONArray ja = j.getJSONArray("photos");
+				for(int k = 0; k < ja.length(); k++)
+				{
+					JSONObject pic = ja.getJSONObject(k);
+					String url = "https://fixmystreet.net/" + pic.getString("thumb");
+
+					Bitmap bitmap = common.downloadImage(url);
+					runOnUiThread(() -> addBitmap(bitmap));
+				}
+
+				runOnUiThread(this::updateCarousel);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -63,49 +96,18 @@ public class DetailReport extends Activity
 		t.start();
 	}
 
-	void displayInfo(String str)
+	void addBitmap(Bitmap bitmap)
 	{
-		try
-		{
-			if (str.equals(""))
-				return;
-
-			JSONObject j = new JSONObject(str);
-			lat.setText(j.getString("latitude"));
-			lng.setText(j.getString("longitude"));
-			address.setText(j.getString("address"));
-			council.setText(j.getString("council"));
-			problem.setText(j.getString("defect"));
-			summary.setText(j.getString("summary"));
-			extra.setText(j.getString("extra"));
-
-			JSONArray ja = j.getJSONArray("photos");
-			for(int i = 0; i < ja.length(); i++)
-			{
-				JSONObject pic = ja.getJSONObject(i);
-				String url = "https://fixmystreet.net/" + pic.getString("thumb");
-
-				Thread t = new Thread(() ->
-				{
-					Bitmap bitmap = common.downloadImage(url);
-					runOnUiThread(() -> displayBitmap(bitmap));
-				});
-
-				t.start();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		bitmapArray.add(bitmap);
 	}
 
-	void displayBitmap(Bitmap bitmap)
+	void updateCarousel()
 	{
-		int height = Common.pxToDp(240);
-		int width = Common.pxToDp(240);
-		ImageView im = new ImageView(getApplicationContext());
-		im.setLayoutParams(new LinearLayout.LayoutParams(width, height));
-		im.setImageBitmap(bitmap);
-		gallery.addView(im);
+		ImageListener imageListener = (position, imageView) -> imageView.setImageBitmap(bitmapArray.get(position));
+		Common.LogMessage("bitmapArray.size() == " + bitmapArray.size());
+		carouselView.setImageListener(imageListener);
+		carouselView.setPageCount(bitmapArray.size());
+
 	}
 
 	void failedAuth(String errmsg)
